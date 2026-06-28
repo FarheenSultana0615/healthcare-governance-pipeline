@@ -1,0 +1,106 @@
+version: 2
+
+models:
+  # ── STAGING ──────────────────────────────────────────────
+  - name: stg_ndap_disease
+    description: "Staged NDAP disease incidence. Key: state|district."
+    columns:
+      - name: facility_id
+        tests: [not_null]
+      - name: state_clean
+        tests: [not_null]
+      - name: year
+        tests: [not_null]
+
+  - name: stg_ndap_phc
+    description: "Staged NDAP PHC facilities. Key: state|year (no District in source)."
+    columns:
+      - name: facility_id
+        tests: [not_null]
+      - name: state_clean
+        tests: [not_null]
+      - name: year
+        tests: [not_null]
+
+  - name: stg_who_ghe
+    description: "Staged WHO Global Health Estimates."
+    columns:
+      - name: country_iso
+        tests: [not_null]
+      - name: year
+        tests: [not_null]
+      - name: indicator_name
+        tests: [not_null]
+
+  # ── SILVER ───────────────────────────────────────────────
+  - name: mart_disease_by_state_year
+    description: "Disease incidence aggregated to state+year grain."
+    columns:
+      - name: state
+        tests: [not_null]
+      - name: year
+        tests: [not_null]
+      - name: state_year_key
+        tests: [not_null, unique]
+
+  - name: mart_phc_by_state_year
+    description: "PHC facility counts at state+year grain."
+    columns:
+      - name: state
+        tests: [not_null]
+      - name: year
+        tests: [not_null]
+      - name: state_year_key
+        tests: [not_null, unique]
+
+  - name: mart_india_health
+    description: >
+      Master joined model: disease burden × facility availability
+      at state+year grain. Full outer join preserves unmatched rows;
+      join_quality column flags completeness.
+    columns:
+      - name: state
+        tests: [not_null]
+      - name: year
+        tests: [not_null]
+      - name: join_quality
+        tests:
+          - accepted_values:
+              values: ['complete', 'no_phc_data', 'no_disease_data']
+# ── GOLD ─────────────────────────────────────────────────
+  - name: gold_state_health_rankings
+    description: >
+      State-level health risk rankings per year. Includes burden score,
+      infrastructure score, risk tier, and within-year burden rank.
+    columns:
+      - name: state
+        tests: [not_null]
+      - name: year
+        tests: [not_null]
+      - name: risk_tier
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['CRITICAL', 'HIGH', 'MODERATE', 'LOW']
+      - name: burden_rank_in_year
+        tests: [not_null]
+
+  - name: gold_yoy_trends
+    description: >
+      Year-over-year malaria trend per state. Flags whether each state
+      is improving or worsening, and whether infrastructure is keeping pace.
+    columns:
+      - name: state
+        tests: [not_null]
+      - name: year
+        tests: [not_null]
+      - name: trend_direction
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['IMPROVING', 'WORSENING', 'STABLE', 'baseline_year']
+      - name: resource_adequacy
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['UNDER_RESOURCED', 'RECOVERING', 'ADEQUATE']
