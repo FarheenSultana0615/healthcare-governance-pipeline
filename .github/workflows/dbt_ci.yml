@@ -63,15 +63,17 @@ jobs:
             bronze_project/models/staging/stg_ndap_phc.sql \
             bronze_project/models/staging/stg_who_ghe.sql
 
-     # 8. Run dbt — build all models
+# 8. Run dbt — build all models
       - name: dbt run
         working-directory: bronze_project
-        run: dbt run --profiles-dir ~/.dbt --vars '{"bronze_path": "../bronze"}'
+        run: |
+          dbt run --profiles-dir ~/.dbt --vars '{"bronze_path": "../bronze"}'
 
       # 9. Run all 31 tests
       - name: dbt test
         working-directory: bronze_project
-        run: dbt test --profiles-dir ~/.dbt --vars '{"bronze_path": "../bronze"}'
+        run: |
+          dbt test --profiles-dir ~/.dbt --vars '{"bronze_path": "../bronze"}'
 
       # 10. Upload test results as artifact
       - name: Upload dbt logs
