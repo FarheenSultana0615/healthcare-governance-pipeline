@@ -40,13 +40,13 @@ jobs:
       - name: Create dbt profiles.yml
         run: |
           mkdir -p ~/.dbt
-          cat > ~/.dbt/profiles.yml << EOF
+          cat > ~/.dbt/profiles.yml << 'EOF'
           bronze_project:
             target: dev
             outputs:
               dev:
                 type: duckdb
-                path: "$GITHUB_WORKSPACE/bronze_project/bronze.duckdb"
+                path: "bronze.duckdb" 
                 threads: 1
           EOF
 
