@@ -66,7 +66,6 @@ models:
       - name: join_quality
         tests:
           - accepted_values:
-            arguments:
               values: ['complete', 'no_phc_data', 'no_disease_data']
 # ── GOLD ─────────────────────────────────────────────────
   - name: gold_state_health_rankings
@@ -82,7 +81,6 @@ models:
         tests:
           - not_null
           - accepted_values:
-            arguments:
               values: ['CRITICAL', 'HIGH', 'MODERATE', 'LOW']
       - name: burden_rank_in_year
         tests: [not_null]
@@ -100,13 +98,11 @@ models:
         tests:
           - not_null
           - accepted_values:
-            arguments:
               values: ['IMPROVING', 'WORSENING', 'STABLE', 'baseline_year']
       - name: resource_adequacy
         tests:
           - not_null
           - accepted_values:
-            arguments:
               values: ['UNDER_RESOURCED', 'RECOVERING', 'ADEQUATE']
 vars:
   bronze_path: "C:/Users/noorr/OneDrive/Documents/WHO/bronze"
