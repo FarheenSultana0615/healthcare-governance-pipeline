@@ -66,8 +66,10 @@ models:
       - name: join_quality
         tests:
           - accepted_values:
-              values: ['complete', 'no_phc_data', 'no_disease_data']
-# ── GOLD ─────────────────────────────────────────────────
+              arguments:
+                values: ['complete', 'no_phc_data', 'no_disease_data']
+
+  # ── GOLD ─────────────────────────────────────────────────
   - name: gold_state_health_rankings
     description: >
       State-level health risk rankings per year. Includes burden score,
@@ -81,7 +83,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['CRITICAL', 'HIGH', 'MODERATE', 'LOW']
+              arguments:
+                values: ['CRITICAL', 'HIGH', 'MODERATE', 'LOW']
       - name: burden_rank_in_year
         tests: [not_null]
 
@@ -98,11 +101,14 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['IMPROVING', 'WORSENING', 'STABLE', 'baseline_year']
+              arguments:
+                values: ['IMPROVING', 'WORSENING', 'STABLE', 'baseline_year']
       - name: resource_adequacy
         tests:
           - not_null
           - accepted_values:
-              values: ['UNDER_RESOURCED', 'RECOVERING', 'ADEQUATE']
+              arguments:
+                values: ['UNDER_RESOURCED', 'RECOVERING', 'ADEQUATE']
+
 vars:
   bronze_path: "C:/Users/noorr/OneDrive/Documents/WHO/bronze"
