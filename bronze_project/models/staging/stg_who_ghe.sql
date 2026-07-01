@@ -1,6 +1,6 @@
 with raw as (
   select *
-  from read_parquet('C:/Users/noorr/OneDrive/Documents/WHO/bronze/who_ghe_full.parquet')
+  from read_parquet('{{ var("bronze_path") }}/who_ghe_full.parquet')
 )
 
 select

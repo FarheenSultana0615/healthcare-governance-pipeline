@@ -1,7 +1,7 @@
 with raw as (
   select *
-  from read_parquet('C:/Users/noorr/OneDrive/Documents/WHO/bronze/Disease_incidence_dataset.parquet')
-),
+ from read_parquet('{{ var("bronze_path") }}/Disease_incidence_dataset.parquet') 
+ ),
 
 clean as (
   select

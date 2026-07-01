@@ -1,0 +1,83 @@
+name: Healthcare Pipeline CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  dbt-pipeline:
+    name: Run dbt Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Python
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3. Cache pip dependencies for speed
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # 4. Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install dbt-duckdb==1.9.1 pandas pyarrow
+
+      # 5. Create dbt profiles.yml pointing to local DuckDB
+      - name: Create dbt profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << 'EOF'
+          bronze_project:
+            target: dev
+            outputs:
+              dev:
+                type: duckdb
+                path: "bronze_project/bronze.duckdb"
+                threads: 1
+          EOF
+
+      # 6. Copy parquet files the SQL models reference
+      - name: Verify parquet sources exist
+        run: |
+          ls -la bronze/
+
+      # 7. Fix hardcoded Windows paths → relative paths for Linux CI
+      - name: Patch parquet paths for CI
+        run: |
+          sed -i "s|C:/Users/noorr/OneDrive/Documents/WHO/bronze/|$(pwd)/bronze/|g" \
+            bronze_project/models/staging/stg_ndap_disease.sql \
+            bronze_project/models/staging/stg_ndap_phc.sql \
+            bronze_project/models/staging/stg_who_ghe.sql
+
+      # 8. Run dbt — build all models
+      - name: dbt run
+        working-directory: bronze_project
+        run: dbt run --profiles-dir ~/.dbt
+
+      # 9. Run all 31 tests
+      - name: dbt test
+        working-directory: bronze_project
+        run: dbt test --profiles-dir ~/.dbt
+
+      # 10. Upload test results as artifact
+      - name: Upload dbt logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-logs
+          path: bronze_project/logs/
+          retention-days: 7
